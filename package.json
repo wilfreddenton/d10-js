@@ -1,0 +1,12 @@
+{
+  "name": "D10-JS",
+  "version": "1.0.0",
+  "description": "be notified when senpai drops more bank breakers",
+  "main": "d10.js",
+  "author": "unsafe_perform_io",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "jsdom": "^15.1.1"
+  }
+}
