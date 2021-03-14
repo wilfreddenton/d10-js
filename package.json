@@ -6,7 +6,7 @@
   "author": "unsafe_perform_io",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "jsdom": "^15.1.1"
   }
 }

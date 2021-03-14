@@ -1,5 +1,6 @@
 const axios = require('axios')
 const fs = require('fs')
+const { exec } = require('child_process')
 const { JSDOM } = require('jsdom')
 
 const url = 'https://acrnm.com/'
@@ -7,17 +8,24 @@ const EVENT_PREFIX = 'acrnm'
 const DROP_EVENT = `${EVENT_PREFIX}_drop`
 const ERROR_EVENT = `${EVENT_PREFIX}_error`
 const IFTTT_KEY = JSON.parse(fs.readFileSync('./config.json'))['ifttt_key']
+const STATE = {products: {}}
 
 function hook_url(event) {
     return `https://maker.ifttt.com/trigger/${event}/with/key/${IFTTT_KEY}`
 }
 
-async function fetch(url) {
-    const res = await axios.get(url, {
-        'maxRedirects': 0,
-        'timeout': 10000
-    })
-    return new JSDOM(res.data).window.document
+async function curl(url) {
+  return new Promise((resolve, reject) => {
+    exec(
+      `curl -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.89 Safari/537.36" --max-time 10 ${url}`,
+      (err, stdout) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(stdout)
+        }
+      })
+  })
 }
 
 async function dispatch(event, data=null) {
@@ -29,7 +37,8 @@ function sleep(ms) {
 }
 
 async function run(products) {
-    document = await fetch(url)
+    const html = await curl(url)
+    const document = new JSDOM(html).window.document
     if (!document.querySelector('.tile-list-wrapper')) {
         throw new Error("The downloaded HTML is not acrnm.com.")
     }
@@ -50,12 +59,11 @@ async function run(products) {
 }
 
 (async () => {
-    let products = {}
     while (true) {
         try {
-            products = await run(products)
-        } catch (error) {
-            await dispatch(ERROR_EVENT, error.stack)
+            STATE.products = await run(STATE.products)
+        } catch (err) {
+            await dispatch(ERROR_EVENT, err.stack)
         }
 
         await sleep(60000)
