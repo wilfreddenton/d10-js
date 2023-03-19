@@ -3,7 +3,7 @@ const fs = require('fs')
 const { exec } = require('child_process')
 const { JSDOM } = require('jsdom')
 
-const url = 'https://acrnm.com/'
+const url = 'https://acrnm.com/?filter=txt'
 const EVENT_PREFIX = 'acrnm'
 const DROP_EVENT = `${EVENT_PREFIX}_drop`
 const ERROR_EVENT = `${EVENT_PREFIX}_error`
@@ -39,12 +39,12 @@ function sleep(ms) {
 async function run(products) {
     const html = await curl(url)
     const document = new JSDOM(html).window.document
-    if (!document.querySelector('.tile-list-wrapper')) {
+    if (!document.querySelector('.m-product-table')) {
         throw new Error("The downloaded HTML is not acrnm.com.")
     }
 
     const _products = {}
-    document.querySelectorAll('.tile .name').forEach((element) => {
+    document.querySelectorAll('.m-product-table__title_cell span').forEach((element) => {
         _products[element.innerHTML] = null
     })
 
